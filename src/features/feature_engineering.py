@@ -1,12 +1,18 @@
 import pandas as pd
 
-# Load dataset
-df = pd.read_csv("data/processed/aqi_dataset.csv")
+# =========================
+# LOAD RAW DATA
+# =========================
 
-# Convert timestamp column to datetime
+df = pd.read_csv("data/raw/openmeteo_raw_data.csv")
+
+# =========================
+# DATETIME PROCESSING
+# =========================
+
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-# Sort by timestamp
+# Sort by time
 df = df.sort_values("timestamp")
 
 # =========================
@@ -22,30 +28,46 @@ df["day_of_week"] = df["timestamp"].dt.dayofweek
 # LAG FEATURES
 # =========================
 
-df["previous_aqi"] = df["aqi"].shift(1)  #future AQI depends on past AQI
+df["previous_aqi"] = df["aqi"].shift(1)
+df["aqi_lag_3"] = df["aqi"].shift(3)
+df["aqi_lag_6"] = df["aqi"].shift(6)
+df["aqi_lag_12"] = df["aqi"].shift(12)
 
-# Rolling average
+# =========================
+# ROLLING FEATURES
+# =========================
+
 df["rolling_avg_3"] = df["aqi"].rolling(window=3, min_periods=1).mean()
+df["rolling_avg_6"] = df["aqi"].rolling(window=6, min_periods=1).mean()
 
-# AQI change
+# =========================
+# AQI CHANGE RATE
+# =========================
+
 df["aqi_change"] = df["aqi"].diff()
-
-# Fill missing pollutants
-pollutant_columns = ["pm10", "no2", "co", "o3"]
-
-df[pollutant_columns] = df[pollutant_columns].fillna(0)
 
 # =========================
 # TARGET VARIABLE
 # =========================
 
-df["future_aqi"] = df["aqi"].shift(-1)
+# Predict AQI 72 hours later
+df["future_aqi"] = df["aqi"].shift(-72)
 
-# Remove essential nulls only
-df = df.dropna(subset=["future_aqi", "previous_aqi"])
+# =========================
+# REMOVE NULLS
+# =========================
 
-# Save engineered dataset
-df.to_csv("data/processed/featured_aqi_dataset.csv", index=False)
+df = df.dropna()
 
-print("Feature engineering completed!")
+# =========================
+# SAVE FEATURED DATASET
+# =========================
+
+output_path = "data/processed/featured_aqi_data.csv"
+
+df.to_csv(output_path, index=False)
+
+print("Feature engineering completed successfully!")
 print(df.head())
+
+print(f"Featured dataset shape: {df.shape}")
