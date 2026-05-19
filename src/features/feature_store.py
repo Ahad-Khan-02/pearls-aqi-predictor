@@ -6,7 +6,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
 import hopsworks
-apply_hopsworks_patches()
+import platform
+
+if platform.system() == "Windows":
+    print("Applying Windows Hopsworks patches...")
+    apply_hopsworks_patches()
+
+else:
+    print("Linux detected — no patches needed.")
+
 
 # =========================
 # impoert libraries

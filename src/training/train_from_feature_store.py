@@ -15,8 +15,15 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# Apply post-import hopsworks internal patches
-apply_hopsworks_patches()
+import platform
+
+if platform.system() == "Windows":
+    print("Applying Windows Hopsworks patches...")
+    # Apply post-import hopsworks internal patches
+    apply_hopsworks_patches()
+else:
+    print("Linux detected — no patches needed.")
+
 
 # =========================
 # LOAD ENV
