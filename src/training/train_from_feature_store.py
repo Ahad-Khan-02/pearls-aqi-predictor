@@ -4,6 +4,7 @@ import os
 # Add project root to path so 'src' package is findable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+# Apply on ALL platforms — Kafka SSL cert issue affects both Windows and Linux CI
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
 
 import joblib
@@ -15,15 +16,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-import platform
-
-if platform.system() == "Windows":
-    print("Applying Windows Hopsworks patches...")
-    # Apply post-import hopsworks internal patches
-    apply_hopsworks_patches()
-else:
-    print("Linux detected — no patches needed.")
-
+apply_hopsworks_patches()
 
 # =========================
 # LOAD ENV
