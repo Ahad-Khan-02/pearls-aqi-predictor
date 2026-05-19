@@ -1,0 +1,40 @@
+name: AQI Feature Pipeline
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+
+  workflow_dispatch:
+
+jobs:
+  feature_pipeline:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Data Backfill Pipeline
+        run: |
+          python src/data_pipeline/openmeteo_backfill.py
+
+      - name: Run Feature Engineering
+        run: |
+          python src/features/feature_engineering.py
+
+      - name: Upload Features to Hopsworks
+        run: |
+          python src/features/feature_store.py
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
