@@ -4,6 +4,29 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import joblib
+import shap
+import sys
+import os
+
+# Add project root to Python path
+sys.path.insert(
+    0,
+    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)
+from src.utils.fetch_latest_features import get_latest_features
+
+# =========================
+# LOAD TRAINED MODEL
+# =========================
+
+model_path = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "models",
+    "best_aqi_model.pkl"
+)
+
+model = joblib.load(model_path)
 
 # =========================
 # PAGE CONFIG
@@ -42,43 +65,21 @@ page = st.sidebar.radio(
 # SAMPLE INPUT DATA
 # =========================
 
-sample_data = {
-    "temperature": 31,
-    "humidity": 55,
-    "wind_speed": 5,
-    "pressure": 1012,
-
-    "pm25": 160,
-    "pm10": 120,
-    "co": 500,
-    "no2": 30,
-    "o3": 45,
-
-    "hour": 14,
-    "day": 20,
-    "month": 5,
-    "day_of_week": 1,
-
-    "previous_aqi": 155,
-    "aqi_lag_3": 150,
-    "aqi_lag_6": 145,
-    "aqi_lag_12": 140,
-
-    "rolling_avg_3": 152,
-    "rolling_avg_6": 148,
-
-    "aqi_change": 5
-}
+sample_data = get_latest_features()
+# Remove timestamp immediately
+sample_data.pop("timestamp", None)
 
 # =========================
 # CALL FASTAPI
 # =========================
+payload = sample_data.copy()
+# Remove timestamp
+payload.pop("timestamp", None)
 
 try:
-
     response = requests.post(
         "http://127.0.0.1:8000/predict",
-        json=sample_data
+        json=payload
     )
 
     prediction = response.json()
@@ -86,10 +87,8 @@ try:
     predicted_aqi = prediction["predicted_aqi"]
     status = prediction["status"]
 
-except:
-
-    predicted_aqi = 156
-    status = "Unhealthy"
+except Exception as e:
+    st.error(f"API connection failed: {e}")
 
 # =========================
 # DASHBOARD PAGE
@@ -159,23 +158,75 @@ elif page == "Forecast":
 
     st.subheader("3-Day AQI Forecast")
 
-    hours = np.arange(72)
+    try:
 
-    forecast = predicted_aqi + np.random.normal(0, 5, 72)
+        hours = np.arange(72)
 
-    forecast_df = pd.DataFrame({
-        "Hour": hours,
-        "AQI": forecast
-    })
+        forecast_values = []
 
-    fig = px.line(
-        forecast_df,
-        x="Hour",
-        y="AQI",
-        title="72-Hour AQI Forecast"
-    )
+        current_input = payload.copy()
 
-    st.plotly_chart(fig, use_container_width=True)
+        for i in range(72):
+
+            # Remove timestamp if exists
+            current_input.pop("timestamp", None)
+
+            response = requests.post(
+                "http://127.0.0.1:8000/predict",
+                json=current_input
+            )
+
+            prediction_json = response.json()
+
+            next_aqi = prediction_json["predicted_aqi"]
+
+            forecast_values.append(next_aqi)
+
+            # =========================
+            # UPDATE FEATURES
+            # =========================
+
+            previous_value = current_input["previous_aqi"]
+
+            current_input["aqi_change"] = (
+                next_aqi - previous_value
+            )
+
+            current_input["previous_aqi"] = next_aqi
+
+            current_input["aqi_lag_3"] = next_aqi
+            current_input["aqi_lag_6"] = next_aqi
+            current_input["aqi_lag_12"] = next_aqi
+
+            current_input["rolling_avg_3"] = (
+                current_input["rolling_avg_3"] + next_aqi
+            ) / 2
+
+            current_input["rolling_avg_6"] = (
+                current_input["rolling_avg_6"] + next_aqi
+            ) / 2
+
+            current_input["hour"] = (
+                current_input["hour"] + 1
+            ) % 24
+
+        forecast_df = pd.DataFrame({
+            "Hour": hours,
+            "AQI": forecast_values
+        })
+
+        fig = px.line(
+            forecast_df,
+            x="Hour",
+            y="AQI",
+            title="72-Hour AQI Forecast"
+        )
+
+        st.plotly_chart(fig, width="stretch")
+
+    except Exception as e:
+
+        st.error(f"Forecast generation failed: {e}")
 
 # =========================
 # EXPLAINABILITY PAGE
@@ -185,32 +236,62 @@ elif page == "Explainability":
 
     st.subheader("SHAP Feature Importance")
 
-    shap_data = pd.DataFrame({
-        "Feature": [
-            "PM2.5",
-            "Temperature",
-            "Humidity",
-            "O3",
-            "NO2"
-        ],
-        "Importance": [
-            0.35,
-            0.22,
-            0.15,
-            0.12,
-            0.08
-        ]
+    # =========================
+    # CREATE DATAFRAME
+    # =========================
+
+    input_df = pd.DataFrame([payload])
+
+    # =========================
+    # SHAP EXPLAINER
+    # =========================
+
+    explainer = shap.TreeExplainer(model)
+
+    shap_values = explainer.shap_values(input_df)
+
+    # =========================
+    # FEATURE IMPORTANCE
+    # =========================
+
+    shap_importance = np.abs(shap_values).mean(axis=0)
+
+    shap_df = pd.DataFrame({
+        "Feature": input_df.columns,
+        "Importance": shap_importance
     })
 
+    shap_df = shap_df.sort_values(
+        by="Importance",
+        ascending=True
+    )
+
+    # =========================
+    # PLOT
+    # =========================
+
     fig = px.bar(
-        shap_data,
+        shap_df,
         x="Importance",
         y="Feature",
         orientation="h",
-        title="Top Feature Importance"
+        title="Real SHAP Feature Importance"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
+
+    # =========================
+    # SHOW TOP FACTORS
+    # =========================
+
+    st.markdown("### Top Influencing Features")
+
+    top_features = shap_df.sort_values(
+        by="Importance",
+        ascending=False
+    ).head(5)
+
+    st.table(top_features)
 
 # =========================
 # MODEL METRICS PAGE
