@@ -7,6 +7,14 @@ import joblib
 import shap
 import sys
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_URL = os.getenv(
+    "API_URL",
+    "http://127.0.0.1:8000/predict"
+)
 
 # Add project root to Python path
 sys.path.insert(
@@ -78,7 +86,7 @@ payload.pop("timestamp", None)
 
 try:
     response = requests.post(
-        "http://127.0.0.1:8000/predict",
+        API_URL,
         json=payload
     )
 
@@ -172,7 +180,7 @@ elif page == "Forecast":
             current_input.pop("timestamp", None)
 
             response = requests.post(
-                "http://127.0.0.1:8000/predict",
+                API_URL,
                 json=current_input
             )
 
