@@ -1,0 +1,441 @@
+/* ============================================
+   KARACHI AQI INTELLIGENCE — GLOBAL STYLES
+   Dark aerospace + data-science aesthetic
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ---- ROOT VARIABLES ---- */
+:root {
+    --bg-primary:    #080c14;
+    --bg-secondary:  #0d1420;
+    --bg-card:       #111827;
+    --bg-card-hover: #1a2235;
+    --border:        #1e2d45;
+    --border-bright: #2a3f5f;
+    --text-primary:  #e8f0fe;
+    --text-secondary:#8899aa;
+    --text-muted:    #556677;
+    --accent-blue:   #3b82f6;
+    --accent-cyan:   #06b6d4;
+    --accent-glow:   rgba(59,130,246,0.15);
+    --font-display:  'Space Mono', monospace;
+    --font-body:     'DM Sans', sans-serif;
+    --radius:        12px;
+    --radius-lg:     20px;
+}
+
+/* ---- STREAMLIT OVERRIDES ---- */
+.stApp {
+    background: var(--bg-primary) !important;
+    font-family: var(--font-body) !important;
+}
+
+[data-testid="stSidebar"] {
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border) !important;
+}
+
+[data-testid="stSidebar"] * {
+    color: var(--text-primary) !important;
+}
+
+/* Sidebar nav links */
+[data-testid="stSidebarNavLink"] {
+    border-radius: 8px !important;
+    margin: 2px 0 !important;
+    transition: background 0.2s !important;
+}
+
+[data-testid="stSidebarNavLink"]:hover {
+    background: var(--accent-glow) !important;
+}
+
+/* Hide default streamlit header */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
+/* ---- HERO SECTION ---- */
+.hero-section {
+    text-align: center;
+    padding: 3rem 2rem 2rem;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 70%);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.hero-badge {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    border: 1px solid;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.2rem;
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+}
+
+.hero-title {
+    font-family: var(--font-display) !important;
+    font-size: 2.6rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: -1px !important;
+    margin: 0 0 0.4rem !important;
+    line-height: 1.1 !important;
+}
+
+.hero-subtitle {
+    font-family: var(--font-body);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0 0 2rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+.hero-aqi {
+    font-family: var(--font-display);
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 40px currentColor;
+    position: relative;
+}
+
+.hero-aqi-label {
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    opacity: 0.7;
+    vertical-align: super;
+    margin-left: 8px;
+}
+
+.hero-status {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 8px 28px;
+    border-radius: 30px;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+}
+
+/* ---- METRIC CARDS ---- */
+.metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1rem;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+}
+
+.metric-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    background: var(--bg-card-hover);
+}
+
+.metric-label {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ---- PAGE HEADERS ---- */
+.page-header {
+    padding: 1.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    font-family: var(--font-display) !important;
+    font-size: 1.8rem !important;
+    color: var(--text-primary) !important;
+    margin: 0 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.page-header p {
+    color: var(--text-secondary) !important;
+    margin: 0.4rem 0 0 !important;
+    font-size: 0.9rem !important;
+}
+
+/* ---- INFO CARDS ---- */
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+}
+
+.info-card:hover {
+    border-color: var(--border-bright);
+}
+
+.info-card-title {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+}
+
+.info-card-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.info-card-sub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+}
+
+/* ---- AQI COLOR BAND ---- */
+.aqi-band {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 12px;
+    margin: 0.8rem 0;
+    gap: 2px;
+}
+
+.aqi-band-seg {
+    flex: 1;
+    border-radius: 4px;
+    transition: opacity 0.3s;
+}
+
+/* ---- STAT BLOCKS ---- */
+.stat-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    text-align: center;
+}
+
+.stat-block-num {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--accent-cyan);
+    line-height: 1;
+}
+
+.stat-block-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ---- LEADERBOARD TABLE ---- */
+.leaderboard {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.leaderboard-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    gap: 1rem;
+}
+
+.leaderboard-row:hover { background: var(--bg-card-hover); }
+.leaderboard-row:last-child { border-bottom: none; }
+
+.lb-rank {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    width: 28px;
+    text-align: center;
+}
+
+.lb-rank.gold   { color: #fbbf24; }
+.lb-rank.silver { color: #94a3b8; }
+.lb-rank.bronze { color: #b45309; }
+
+.lb-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lb-badge {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ---- INSIGHT PILL ---- */
+.insight-pill {
+    display: inline-block;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    padding: 4px 14px;
+    border-radius: 16px;
+    margin: 3px;
+    font-weight: 500;
+}
+
+/* ---- HEALTH RECOMMENDATION BOX ---- */
+.health-rec {
+    background: linear-gradient(135deg, #0d1f3c 0%, #0a1628 100%);
+    border: 1px solid var(--accent-blue);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-rec::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+}
+
+.health-rec-title {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+}
+
+.health-rec-text {
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* ---- POLLUTANT ROW ---- */
+.pollutant-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.pollutant-name {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    width: 60px;
+}
+
+.pollutant-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.pollutant-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.pollutant-val {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    width: 70px;
+    text-align: right;
+}
+
+/* ---- NAV HINT ---- */
+.nav-hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 1.5rem 0 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+/* ---- PLOTLY CHART DARK OVERRIDE ---- */
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .main-svg {
+    background: transparent !important;
+}
+
+/* ---- STREAMLIT METRIC OVERRIDE ---- */
+[data-testid="metric-container"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 1rem !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--text-primary) !important;
+    font-family: var(--font-display) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--text-secondary) !important;
+}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+/* ---- SECTION DIVIDER ---- */
+.section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+/* ---- GLOW EFFECT ---- */
+.glow-box {
+    box-shadow: 0 0 30px rgba(59,130,246,0.1), 0 0 60px rgba(59,130,246,0.05);
+}
