@@ -14,6 +14,13 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+st.set_page_config(
+    page_title="...",
+    page_icon="...",
+    layout="wide",
+    initial_sidebar_state="expanded"   # ← this is critical
+)
+
 # Load CSS
 css_path = os.path.join(os.path.dirname(__file__), "..", "assets", "style.css")
 with open(css_path) as f:

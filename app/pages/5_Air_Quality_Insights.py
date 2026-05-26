@@ -15,6 +15,13 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+st.set_page_config(
+    page_title="...",
+    page_icon="...",
+    layout="wide",
+    initial_sidebar_state="expanded"   # ← this is critical
+)
+
 css_path = os.path.join(os.path.dirname(__file__), "..", "assets", "style.css")
 with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
