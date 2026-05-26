@@ -76,8 +76,6 @@ if IS_WINDOWS:
     os.chmod      = _patched_chmod
     os.open       = _patched_os_open
     builtins.open = _patched_open
-    # NOTE: pathlib.Path is intentionally NOT patched — breaks Streamlit's
-    # internal path handling. The os-level patches cover all hopsworks needs.
 
 
 def apply_hopsworks_patches():
