@@ -2,9 +2,11 @@ import os
 import tempfile
 import builtins
 import inspect
+from pathlib import Path
 
 IS_WINDOWS = os.name == "nt"
 
+# Use absolute path to project's local 'tmp' directory on Windows
 temp_dir = os.path.abspath("tmp") if IS_WINDOWS else "/tmp"
 
 _original_mkdir    = os.mkdir
@@ -12,6 +14,7 @@ _original_makedirs = os.makedirs
 _original_chmod    = os.chmod
 _original_os_open  = os.open
 _original_open     = builtins.open
+_original_path_open = Path.open  # Grab the original pathlib opener
 
 _original_makedirs(temp_dir, exist_ok=True)
 
@@ -24,12 +27,24 @@ tempfile.tempdir    = temp_dir
 tempfile.gettempdir = lambda: temp_dir
 
 def _redirect(path):
-    if IS_WINDOWS and isinstance(path, (str, bytes)):
-        p = path.decode() if isinstance(path, bytes) else path
-        for prefix in ("/tmp", "\\tmp"):
-            if p.startswith(prefix):
-                redirected = os.path.normpath(p.replace(prefix, temp_dir, 1))
-                return redirected.encode() if isinstance(path, bytes) else redirected
+    if IS_WINDOWS and path is not None:
+        # Handle pathlib.Path objects safely
+        if isinstance(path, Path):
+            p = str(path)
+        else:
+            p = path.decode() if isinstance(path, bytes) else str(path)
+            
+        # Standardize slashes to catch all flavors of /tmp or \tmp
+        p_norm = p.replace("\\", "/")
+        if p_norm.startswith("/tmp") or p_norm.startswith("tmp"):
+            # Strip leading slashes to prevent os.path.join from resetting to root
+            cleaned_p = p_norm.lstrip("/")
+            # Remove 'tmp' prefix if it's there
+            if cleaned_p.startswith("tmp/"):
+                cleaned_p = cleaned_p[4:]
+            
+            redirected = os.path.normpath(os.path.join(temp_dir, cleaned_p))
+            return redirected.encode() if isinstance(path, bytes) else redirected
     return path
 
 if IS_WINDOWS:
@@ -39,15 +54,14 @@ if IS_WINDOWS:
             parent = os.path.dirname(path)
             if parent and not os.path.exists(parent):
                 _patched_mkdir(parent, mode)
-            if not os.path.exists(path):
-                _original_mkdir(path, mode)
+            _original_mkdir(path, mode)
 
     def _patched_makedirs(path, mode=0o777, exist_ok=False):
         _original_makedirs(_redirect(path), mode=mode, exist_ok=exist_ok)
 
     def _patched_chmod(path, mode, **kwargs):
-        p = path.decode() if isinstance(path, bytes) else str(path)
-        if p.startswith("/tmp") or p.startswith("\\tmp"):
+        p = str(_redirect(path))
+        if temp_dir in p:
             return
         try:
             _original_chmod(path, mode, **kwargs)
@@ -62,20 +76,36 @@ if IS_WINDOWS:
         return _original_os_open(path, flags, mode, **kwargs)
 
     def _patched_open(file, *args, **kwargs):
-        if isinstance(file, (str, bytes)):
-            file = _redirect(file)
+        file = _redirect(file)
+        if isinstance(file, (str, bytes, Path)):
+            file_str = str(file)
             mode = args[0] if args else kwargs.get("mode", "r")
             if any(c in mode for c in ("w", "a", "x")):
-                parent = os.path.dirname(file)
+                parent = os.path.dirname(file_str)
                 if parent and not os.path.exists(parent):
                     _original_makedirs(parent, exist_ok=True)
         return _original_open(file, *args, **kwargs)
+
+    # New patch to capture Path().open(...) calls
+    def _patched_path_open(self, *args, **kwargs):
+        redirected_path = _redirect(self)
+        # Create a new Path instance with the redirected string
+        new_path_obj = Path(redirected_path)
+        
+        mode = args[0] if args else kwargs.get("mode", "r")
+        if any(c in mode for c in ("w", "a", "x")):
+            parent = os.path.dirname(str(redirected_path))
+            if parent and not os.path.exists(parent):
+                _original_makedirs(parent, exist_ok=True)
+                
+        return _original_path_open(new_path_obj, *args, **kwargs)
 
     os.mkdir      = _patched_mkdir
     os.makedirs   = _patched_makedirs
     os.chmod      = _patched_chmod
     os.open       = _patched_os_open
     builtins.open = _patched_open
+    Path.open     = _patched_path_open  # Inject pathlib opener patch
 
 
 def apply_hopsworks_patches():
@@ -97,7 +127,7 @@ def apply_hopsworks_patches():
                             parts.append(self._project_name)
                         if hasattr(self, '_username') and self._username:
                             parts.append(self._username)
-                        raw_dir = "/tmp/" + "/".join(parts)
+                        raw_dir = os.path.join(temp_dir, *parts)
                     _original_makedirs(_redirect(raw_dir), exist_ok=True)
                 obj._makedirs_with_sticky_bit = _patched_makedirs_with_sticky_bit
                 break

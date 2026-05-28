@@ -1,77 +1,127 @@
 import os
-import requests
 import pandas as pd
-from dotenv import load_dotenv
 from datetime import datetime
+import requests
 
+# =========================
+# CONFIG
+# =========================
 
-DATASET_PATH = "data/processed/aqi_dataset.csv"
+CITY = "karachi"
+API_URL = f"https://api.waqi.info/feed/{CITY}/?token=demo"
 
-# Load environment variables
-load_dotenv()
+OUTPUT_PATH = "data/raw/live_aqi_data.csv"
 
-# Get API key
-API_KEY = os.getenv("AQICN_API_KEY")
+# =========================
+# FETCH LIVE DATA
+# =========================
 
-# City to fetch AQI for
-CITY = "Karachi"
+response = requests.get(API_URL)
 
-# API URL
-url = f"https://api.waqi.info/feed/{CITY}/?token={API_KEY}"
+if response.status_code != 200:
+    raise Exception(
+        f"API request failed: {response.status_code}"
+    )
 
-# Send request
-response = requests.get(url)
-
-# Convert response to JSON
 data = response.json()
 
-# Check API status
-if data["status"] == "ok":
+if data["status"] != "ok":
+    raise Exception(
+        f"AQI API error: {data}"
+    )
 
-    # Extract useful information
-    aqi_data = {
-        "city": CITY,
-        "aqi": data["data"]["aqi"],
+aqi_data = data["data"]
 
-        # Pollutants
-        "pm25": data["data"]["iaqi"].get("pm25", {}).get("v"),
-        "pm10": data["data"]["iaqi"].get("pm10", {}).get("v"),
-        "no2": data["data"]["iaqi"].get("no2", {}).get("v"),
-        "co": data["data"]["iaqi"].get("co", {}).get("v"),
-        "o3": data["data"]["iaqi"].get("o3", {}).get("v"),
+# =========================
+# EXTRACT FEATURES
+# =========================
 
-        # Weather
-        "temperature": data["data"]["iaqi"].get("t", {}).get("v"),
-        "humidity": data["data"]["iaqi"].get("h", {}).get("v"),
-        "pressure": data["data"]["iaqi"].get("p", {}).get("v"),
-        "wind_speed": data["data"]["iaqi"].get("w", {}).get("v"),
+record = {
+    "timestamp": datetime.now(),
 
-        # Metadata
-        "timestamp": datetime.now()
-    }
+    "aqi": aqi_data.get("aqi"),
 
-    # Convert to DataFrame
-    df = pd.DataFrame([aqi_data])
+    "temperature":
+        aqi_data.get("iaqi", {})
+        .get("t", {})
+        .get("v"),
 
-    # Check if dataset already exists
-    if os.path.exists(DATASET_PATH):
+    "humidity":
+        aqi_data.get("iaqi", {})
+        .get("h", {})
+        .get("v"),
 
-        # Load existing dataset
-        existing_df = pd.read_csv(DATASET_PATH)
+    "pressure":
+        aqi_data.get("iaqi", {})
+        .get("p", {})
+        .get("v"),
 
-        # Append new row
-        updated_df = pd.concat([existing_df, df], ignore_index=True)
+    "wind_speed":
+        aqi_data.get("iaqi", {})
+        .get("w", {})
+        .get("v"),
 
-    else:
-        # Create new dataset
-        updated_df = df
+    "pm25":
+        aqi_data.get("iaqi", {})
+        .get("pm25", {})
+        .get("v"),
 
-    # Save updated dataset
-    updated_df.to_csv(DATASET_PATH, index=False)
+    "pm10":
+        aqi_data.get("iaqi", {})
+        .get("pm10", {})
+        .get("v"),
 
-    print("AQI data fetched successfully!")
-    print(df)
+    "co":
+        aqi_data.get("iaqi", {})
+        .get("co", {})
+        .get("v"),
+
+    "no2":
+        aqi_data.get("iaqi", {})
+        .get("no2", {})
+        .get("v"),
+
+    "o3":
+        aqi_data.get("iaqi", {})
+        .get("o3", {})
+        .get("v"),
+}
+
+# =========================
+# CREATE DATAFRAME
+# =========================
+
+new_df = pd.DataFrame([record])
+
+# =========================
+# APPEND TO CSV
+# =========================
+
+os.makedirs(
+    os.path.dirname(OUTPUT_PATH),
+    exist_ok=True
+)
+
+if os.path.exists(OUTPUT_PATH):
+
+    existing_df = pd.read_csv(OUTPUT_PATH)
+
+    updated_df = pd.concat(
+        [existing_df, new_df],
+        ignore_index=True
+    )
 
 else:
-    print("Failed to fetch AQI data")
-    print(data)
+    updated_df = new_df
+
+# =========================
+# SAVE
+# =========================
+
+updated_df.to_csv(
+    OUTPUT_PATH,
+    index=False
+)
+
+print("Live AQI data fetched successfully!")
+print(updated_df.tail())

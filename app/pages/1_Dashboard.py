@@ -89,7 +89,7 @@ with col_gauge:
         margin=dict(l=30, r=30, t=20, b=10),
         font={"color": "#e8f0fe"}
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 with col_info:
     # AQI scale breakdown

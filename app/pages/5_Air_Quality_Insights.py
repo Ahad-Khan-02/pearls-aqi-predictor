@@ -133,7 +133,7 @@ with col1:
                    tickfont=dict(family="Space Mono", size=9)),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_hist, use_container_width=True)
+    st.plotly_chart(fig_hist, width="stretch")
 
 with col2:
     st.markdown("""
@@ -164,7 +164,7 @@ with col2:
                    tickfont=dict(family="Space Mono", size=9)),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_hour, use_container_width=True)
+    st.plotly_chart(fig_hour, width="stretch")
 
 # =========================
 # ROW 2: WEEKDAY + MONTHLY
@@ -204,7 +204,7 @@ with col3:
         )],
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_day, use_container_width=True)
+    st.plotly_chart(fig_day, width="stretch")
 
 with col4:
     st.markdown("""
@@ -236,7 +236,7 @@ with col4:
                    tickfont=dict(family="Space Mono", size=9)),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_mon, use_container_width=True)
+    st.plotly_chart(fig_mon, width="stretch")
 
 # =========================
 # CORRELATION HEATMAP
@@ -276,7 +276,7 @@ fig_heat.update_layout(
     yaxis=dict(color="#8899aa", tickfont=dict(family="DM Sans", size=10)),
     font=dict(color="#e8f0fe")
 )
-st.plotly_chart(fig_heat, use_container_width=True)
+st.plotly_chart(fig_heat, width="stretch")
 
 # =========================
 # KEY INSIGHTS

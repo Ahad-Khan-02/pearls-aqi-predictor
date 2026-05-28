@@ -1,17 +1,32 @@
 import sys
 import os
 
+
+
+# import tempfile
+# # Windows-safe temp directory
+# tempfile.tempdir = os.path.join(os.getcwd(), "tmp")
+
+# os.makedirs(
+#     tempfile.tempdir,
+#     exist_ok=True
+# )
+
+
 # Add project root to path so 'src' package is findable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-# Apply on ALL platforms — Kafka SSL cert issue affects both Windows and Linux CI
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
+apply_hopsworks_patches()
+
 
 from dotenv import load_dotenv
 import hopsworks
 import pandas as pd
 
-apply_hopsworks_patches()
+
+
+
 
 # =========================
 # LOAD ENV VARIABLES
@@ -39,7 +54,7 @@ fs = project.get_feature_store()
 # LOAD FEATURE DATA
 # =========================
 
-data_path = "data/processed/featured_aqi_data.csv"
+data_path = "data/processed/live_featured_aqi_data.csv"
 if not os.path.exists(data_path):
     raise FileNotFoundError(f"Data file not found: {data_path}")
 
@@ -53,7 +68,7 @@ print(f"Loaded {len(df)} rows | Columns: {list(df.columns)}")
 # =========================
 
 feature_group = fs.get_or_create_feature_group(
-    name="aqi_features",
+    name="aqi_live_features",
     version=1,
     description="AQI forecasting features using Open-Meteo historical data",
     primary_key=["timestamp"],

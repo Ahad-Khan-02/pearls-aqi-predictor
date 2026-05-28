@@ -229,7 +229,7 @@ fig.update_layout(
     font=dict(color="#e8f0fe")
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # =========================
 # HOURLY BREAKDOWN TABLE

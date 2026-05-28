@@ -1,10 +1,14 @@
 import sys
 import os
 
+
 # Add project root
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 # Must apply patches BEFORE hopsworks.login() — works on Windows and Linux CI
+# from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
+
+# apply_hopsworks_patches()
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
 apply_hopsworks_patches()
 
@@ -33,7 +37,7 @@ fs = project.get_feature_store()
 # GET FEATURE GROUP
 # =========================
 
-feature_group = fs.get_feature_group(name="aqi_features", version=1)
+feature_group = fs.get_feature_group(name="aqi_live_features", version=1)
 
 # =========================
 # READ DATA

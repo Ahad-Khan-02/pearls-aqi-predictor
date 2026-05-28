@@ -107,28 +107,27 @@ with col_bar:
     model_names = [m for m, _ in sorted_models]
     maes        = [models_data[m]["MAE"]  for m in model_names]
     rmses       = [models_data[m]["RMSE"] for m in model_names]
+    # 1. Map base colors
     clrs        = ["#fbbf24" if m == best_model else "#3b82f6" for m in model_names]
+    
+    # 2. Convert standard hex strings safely into rgba strings for alpha control
+    # #fbbf24 -> rgba(251, 191, 36, 0.8)  and  #3b82f6 -> rgba(59, 130, 246, 0.8)
+    clrs_with_alpha = [
+        "rgba(251, 191, 36, 0.8)" if m == best_model else "rgba(59, 130, 246, 0.8)" 
+        for m in model_names
+    ]
 
     fig_bar = go.Figure()
     fig_bar.add_trace(go.Bar(
         name="MAE",
         x=model_names,
         y=maes,
-        marker_color=[c + "cc" for c in clrs],
+        marker_color=clrs_with_alpha,  # <-- Use the valid rgba array here
         text=[f"{v}" for v in maes],
         textposition="outside",
         textfont=dict(color="#e8f0fe", size=11, family="Space Mono")
     ))
-    fig_bar.add_trace(go.Bar(
-        name="RMSE",
-        x=model_names,
-        y=rmses,
-        marker_color=clrs,
-        opacity=0.6,
-        text=[f"{v}" for v in rmses],
-        textposition="outside",
-        textfont=dict(color="#e8f0fe", size=11, family="Space Mono")
-    ))
+
     fig_bar.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(13,20,32,0.6)",
@@ -144,7 +143,7 @@ with col_bar:
         ),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
 
 with col_radar:
     st.markdown("""
@@ -176,7 +175,15 @@ with col_radar:
         ],
     }
 
-    model_colors = {"Random Forest": "#fbbf24", "Ridge": "#3b82f6"}
+    # Define primary colors and matching translucent RGBA fills for the radar plots
+    model_colors = {
+        "Random Forest": "#fbbf24", 
+        "Ridge": "#3b82f6"
+    }
+    model_fills = {
+        "Random Forest": "rgba(251, 191, 36, 0.13)",  # Matches #fbbf24 with low opacity
+        "Ridge": "rgba(59, 130, 246, 0.13)"          # Matches #3b82f6 with low opacity
+    }
 
     fig_radar = go.Figure()
     for mname, vals in radar_data.items():
@@ -188,7 +195,7 @@ with col_radar:
             fill="toself",
             name=mname,
             line=dict(color=model_colors[mname], width=2),
-            fillcolor=model_colors[mname] + "22",
+            fillcolor=model_fills[mname],  # <-- Pass the safe, explicit RGBA string here
             hovertemplate="%{theta}: %{r:.2f}<extra>" + mname + "</extra>"
         ))
 
@@ -212,7 +219,7 @@ with col_radar:
         legend=dict(font=dict(color="#8899aa")),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_radar, use_container_width=True)
+    st.plotly_chart(fig_radar, width="stretch")
 
 # =========================
 # R² SCORE CHART
@@ -240,9 +247,11 @@ fig_r2 = go.Figure(go.Bar(
     hovertemplate="<b>%{x}</b><br>R²: %{y:.4f}<extra></extra>"
 ))
 
-fig_r2.add_hline(y=1.0, line=dict(color="#00e67644", width=1, dash="dot"),
-                 annotation_text="Perfect R²=1.0",
-                 annotation_font=dict(color="#00e676", size=9))
+fig_r2.add_hline(
+    y=1.0,
+    line_dash="dot",
+    line_color="green"
+)
 
 fig_r2.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
@@ -257,7 +266,7 @@ fig_r2.update_layout(
     ),
     font=dict(color="#e8f0fe")
 )
-st.plotly_chart(fig_r2, use_container_width=True)
+st.plotly_chart(fig_r2, width="stretch")
 
 # =========================
 # CHAMPION HIGHLIGHT

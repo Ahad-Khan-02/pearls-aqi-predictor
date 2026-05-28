@@ -165,7 +165,7 @@ with col_bar:
         yaxis=dict(color="#e8f0fe", tickfont=dict(size=10, family="DM Sans")),
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
 
 with col_waterfall:
     st.markdown("""
@@ -203,7 +203,7 @@ with col_waterfall:
         showlegend=False,
         font=dict(color="#e8f0fe")
     )
-    st.plotly_chart(fig_wf, use_container_width=True)
+    st.plotly_chart(fig_wf, width="stretch")
 
 # =========================
 # FEATURE CONTRIBUTOR TABLE

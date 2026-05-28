@@ -211,8 +211,8 @@ os.makedirs(tempfile.tempdir, exist_ok=True)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
-# apply_hopsworks_patches()
+from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
+apply_hopsworks_patches()
 
 import streamlit as st
 from src.utils.fetch_latest_features import get_latest_features
