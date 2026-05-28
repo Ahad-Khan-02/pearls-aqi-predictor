@@ -1,6 +1,9 @@
 name: AQI Feature Pipeline
 
 on:
+  schedule:
+    - cron: '0 * * * *'
+
   workflow_dispatch:
 
 jobs:
@@ -16,22 +19,24 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Run Data Backfill Pipeline
+      - name: Run AQI Data Fetching
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
         run: |
-          python src/data_pipeline/openmeteo_backfill.py
+          python src/data_pipeline/fetch_aqi_data.py
 
       - name: Run Feature Engineering
         run: |
-          python src/features/feature_engineering.py
+          python src/features/live_feature_engineering.py
 
       - name: Upload Features to Hopsworks
-        run: |
-          python src/features/feature_store.py
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        run: |
+          python src/features/feature_store.py

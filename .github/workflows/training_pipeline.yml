@@ -1,10 +1,13 @@
 name: AQI Training Pipeline
 
 on:
+  schedule:
+    - cron: '0 0 * * *'
+
   workflow_dispatch:
 
 jobs:
-  training_pipeline:
+  model_training:
 
     runs-on: ubuntu-latest
 
@@ -16,14 +19,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Train Models from Feature Store
-        run: |
-          python src/training/train_from_feature_store.py
+      - name: Train AQI Forecasting Model
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        run: |
+          python src/training/train_from_feature_store.py
