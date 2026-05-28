@@ -6,17 +6,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 # Apply on ALL platforms — Kafka SSL cert issue affects both Windows and Linux CI
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
+apply_hopsworks_patches()
 
 import joblib
 import pandas as pd
 import hopsworks
 from dotenv import load_dotenv
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-apply_hopsworks_patches()
+
 
 # =========================
 # LOAD ENV
@@ -41,6 +42,7 @@ fs = project.get_feature_store()
 
 feature_group = fs.get_feature_group(name="aqi_features", version=1)
 df = feature_group.read()
+df = df.sort_values("timestamp").reset_index(drop=True)
 
 print(f"Loaded dataset shape: {df.shape}")
 
@@ -51,21 +53,26 @@ print(f"Loaded dataset shape: {df.shape}")
 features = [
     "temperature", "humidity", "wind_speed", "pressure",
     "pm25", "pm10", "co", "no2", "o3",
-    "hour", "day", "month", "day_of_week",
+    "hour", "day", "month", "day_of_week","is_weekend", "is_rush_hour",
     "previous_aqi", "aqi_lag_3", "aqi_lag_6", "aqi_lag_12",
-    "rolling_avg_3", "rolling_avg_6", "aqi_change"
+    "rolling_avg_3", "rolling_avg_6","rolling_avg_24", "aqi_change","aqi_trend", "pollution_index"
 ]
-
-X = df[features]
-y = df["future_aqi"]
+target = "future_aqi"
 
 # =========================
 # TRAIN / TEST SPLIT
 # =========================
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+split_index = int(len(df) * 0.8)
+
+train_df = df.iloc[:split_index]
+test_df  = df.iloc[split_index:]
+
+X_train = train_df[features]
+y_train = train_df[target]
+
+X_test = test_df[features]
+y_test = test_df[target]
 
 # =========================
 # TRAIN MODELS

@@ -255,9 +255,9 @@ def load_features():
 FEATURE_COLUMNS = [
     "temperature", "humidity", "wind_speed", "pressure",
     "pm25", "pm10", "co", "no2", "o3",
-    "hour", "day", "month", "day_of_week",
+    "hour", "day", "month", "day_of_week","is_weekend", "is_rush_hour",
     "previous_aqi", "aqi_lag_3", "aqi_lag_6", "aqi_lag_12",
-    "rolling_avg_3", "rolling_avg_6", "aqi_change"
+    "rolling_avg_3", "rolling_avg_6","rolling_avg_24", "aqi_change","aqi_trend", "pollution_index"
 ]
 
 model     = load_model()
