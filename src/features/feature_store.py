@@ -56,7 +56,7 @@ print(f"Loaded {len(df)} rows")
 # =========================
 
 feature_group = fs.get_or_create_feature_group(
-    name="aqi_features",
+    name="aqi_training_features",
     version=1,
     description="Historical AQI training features",
     primary_key=["timestamp"],

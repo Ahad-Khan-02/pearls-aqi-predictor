@@ -11,9 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
-import pandas as pd
-import numpy as np
+import json
 
 st.set_page_config(
     page_title="...",
@@ -37,12 +35,44 @@ st.markdown("""
 # MODEL METRICS DATA
 # =========================
 
-models_data = {
-    "Random Forest":  {"MAE": 4.31, "RMSE": 6.29,  "R2": 0.970, "Params": "100 trees", "Status": "Champion"},
-    "Ridge":          {"MAE": 8.72, "RMSE": 11.85, "R2": 0.890, "Params": "α=1.0",     "Status": "Runner-up"},
-}
 
-best_model = "Random Forest"
+metrics_path = os.path.join(
+    os.path.dirname(__file__),
+    "..",
+    "..",
+    "models",
+    "model_metrics.json"
+)
+
+if not os.path.exists(metrics_path):
+    st.error("Model metrics file not found.")
+    st.stop()
+
+with open(metrics_path, "r") as f:
+    metrics_json = json.load(f)
+
+best_model = metrics_json["best_model"]
+
+models_data = {}
+
+for model_name, vals in metrics_json.items():
+
+    if model_name == "best_model":
+        continue
+
+    models_data[model_name] = {
+        "MAE": vals["MAE"],
+        "RMSE": vals["RMSE"],
+        "R2": vals["R2"],
+        "Params": "Dynamic",
+        "Status": (
+            "Champion"
+            if model_name == best_model
+            else "Runner-up"
+        )
+    }
+
+
 
 # =========================
 # LEADERBOARD
@@ -267,24 +297,3 @@ fig_r2.update_layout(
     font=dict(color="#e8f0fe")
 )
 st.plotly_chart(fig_r2, width="stretch")
-
-# =========================
-# CHAMPION HIGHLIGHT
-# =========================
-
-st.markdown(f"""
-<div class="health-rec" style="text-align:center;">
-    <div class="health-rec-title">🏆 Champion Model</div>
-    <div style="font-family:'Space Mono',monospace; font-size:2rem; color:#fbbf24;
-                margin:0.5rem 0;">Random Forest</div>
-    <div style="color:#8899aa; font-size:0.9rem;">
-        R² 0.970 &nbsp;·&nbsp; MAE 4.31 &nbsp;·&nbsp; RMSE 6.29 &nbsp;·&nbsp; 100 estimators
-    </div>
-    <div style="margin-top:1rem;">
-        <span class="insight-pill">Best R²</span>
-        <span class="insight-pill">Lowest Error</span>
-        <span class="insight-pill">Production Ready</span>
-        <span class="insight-pill">SHAP Compatible</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)

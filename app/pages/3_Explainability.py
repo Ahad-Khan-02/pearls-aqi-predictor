@@ -72,12 +72,37 @@ st.markdown("""
 
 @st.cache_data(ttl=3600)
 def compute_shap(_model, _payload):
-    explainer   = shap.TreeExplainer(_model)
-    input_df    = pd.DataFrame([_payload])
-    shap_vals   = explainer.shap_values(input_df)
-    base_val    = float(explainer.expected_value)
-    shap_arr    = shap_vals[0] if len(shap_vals.shape) > 1 else shap_vals
-    return shap_arr, base_val, list(input_df.columns), input_df.iloc[0].to_dict()
+    input_df = pd.DataFrame([_payload])
+    
+    # 1. Inspect model type to select the correct explainer safely
+    model_classname = _model.__class__.__name__
+    
+    if "Linear" in model_classname or "Ridge" in model_classname or "Lasso" in model_classname:
+        # Fallback for linear models (Ridge, LinearRegression, etc.)
+        # Note: LinearExplainer often requires a background dataset or a feature mask
+        explainer = shap.LinearExplainer(_model, input_df)
+        shap_vals = explainer.shap_values(input_df)
+    else:
+        # Tree-based fallback (Random Forest, Gradient Boosting, etc.)
+        explainer = shap.TreeExplainer(_model)
+        shap_vals = explainer.shap_values(input_df)
+
+    # 2. Extract expected value safely (it can sometimes be an array or a scalar depending on the explainer)
+    if hasattr(explainer, "expected_value"):
+        base_val = explainer.expected_value
+        if isinstance(base_val, (np.ndarray, list)):
+            base_val = base_val[0]
+    else:
+        base_val = float(_model.predict(input_df)[0])
+
+    # 3. Handle multidimensional arrays returned by some older scikit-learn models
+    if len(shap_vals.shape) > 1:
+        shap_arr = shap_vals[0]
+    else:
+        shap_arr = shap_vals if not isinstance(shap_vals, list) else shap_vals[0]
+        
+    return shap_arr, float(base_val), list(input_df.columns), input_df.iloc[0].to_dict()
+
 
 with st.spinner("Computing SHAP values..."):
     shap_arr, base_val, feature_names, feature_vals = compute_shap(model, payload)
@@ -170,32 +195,50 @@ with col_bar:
 with col_waterfall:
     st.markdown("""
     <div class="info-card-title" style="font-size:0.7rem; letter-spacing:2px; color:#8899aa;
-         text-transform:uppercase; margin-bottom:0.5rem;">SHAP Waterfall (Top 8)</div>
+         text-transform:uppercase; margin-bottom:0.5rem;">SHAP Waterfall Evolution</div>
     """, unsafe_allow_html=True)
 
-    n_wf      = 8
-    wf_feats  = top_features[:n_wf]
-    wf_shap   = top_shap[:n_wf]
-    wf_clrs   = ["#ef5350" if v > 0 else "#42a5f5" for v in wf_shap]
+    # 1. Take top 7 features explicitly
+    n_wf = 7
+    wf_feats = top_features[:n_wf]
+    wf_shap = [float(x) for x in top_shap[:n_wf]]
+
+    # 2. Group all remaining features into "Other" to keep the math perfectly balanced
+    total_shap_computed = sum(shap_arr)
+    other_shap = total_shap_computed - sum(wf_shap)
+
+    # 3. Construct chronological steps: Base -> Features -> Other -> Prediction
+    wf_x = [base_val] + wf_shap + [other_shap]
+    wf_y = ["Base Value"] + wf_feats + ["Other Features"]
+    
+    # Measure types for Plotly: 'absolute' sets a starting/ending point, 'relative' adds/subtracts
+    wf_measure = ["absolute"] + ["relative"] * (n_wf + 1) + ["total"]
+    
+    # Append the final prediction total bar
+    wf_x.append(predicted_aqi)
+    wf_y.append("Prediction")
 
     fig_wf = go.Figure(go.Waterfall(
         orientation="h",
-        measure=["relative"] * n_wf + ["total"],
-        x=wf_shap + [sum(wf_shap)],
-        y=wf_feats + ["Total"],
+        measure=wf_measure,
+        x=wf_x,
+        y=wf_y,
         connector={"line": {"color": "#2a3f5f", "width": 1}},
         decreasing={"marker": {"color": "#42a5f5"}},
         increasing={"marker": {"color": "#ef5350"}},
         totals={"marker": {"color": "#fbbf24"}},
-        hovertemplate="<b>%{y}</b><br>SHAP: %{x:.3f}<extra></extra>"
+        text=[f"{x:+.2f}" if m == "relative" else f"{x:.2f}" for x, m in zip(wf_x, wf_measure)],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Value/Impact: %{x:.3f}<extra></extra>"
     ))
+    
     fig_wf.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(13,20,32,0.6)",
         height=360,
-        margin=dict(l=0, r=20, t=10, b=30),
+        margin=dict(l=10, r=40, t=10, b=30),
         xaxis=dict(
-            title="SHAP value",
+            title="AQI Scale Progression",
             color="#8899aa", gridcolor="#1e2d45",
             tickfont=dict(size=9, family="Space Mono")
         ),

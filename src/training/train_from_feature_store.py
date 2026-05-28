@@ -40,7 +40,7 @@ fs = project.get_feature_store()
 # GET FEATURE GROUP
 # =========================
 
-feature_group = fs.get_feature_group(name="aqi_features", version=1)
+feature_group = fs.get_feature_group(name="aqi_training_features", version=1)
 df = feature_group.read()
 df = df.sort_values("timestamp").reset_index(drop=True)
 
@@ -86,6 +86,7 @@ models = {
 best_model      = None
 best_r2         = float("-inf")
 best_model_name = None
+met=[]
 
 for name, model in models.items():
     print(f"\nTraining {name}...")
@@ -95,6 +96,7 @@ for name, model in models.items():
     mae  = mean_absolute_error(y_test, predictions)
     rmse = mean_squared_error(y_test, predictions) ** 0.5
     r2   = r2_score(y_test, predictions)
+    met.append(([name, mae, rmse, r2]))
 
     print(f"  MAE:  {mae:.4f}")
     print(f"  RMSE: {rmse:.4f}")
@@ -106,6 +108,36 @@ for name, model in models.items():
         best_model_name = name
 
 print(f"\nBest model: {best_model_name} (R2={best_r2:.4f})")
+
+
+# =========================
+# SAVE MODEL METRICS
+# =========================
+
+import json
+
+metrics = {
+    "RandomForest": {
+        "MAE": round(met[0][1], 4),
+        "RMSE": round(met[0][2], 4),
+        "R2": round(met[0][3], 4)
+    },
+    "Ridge": {
+        "MAE": round(met[1][1], 4),
+        "RMSE": round(met[1][2], 4),
+        "R2": round(met[1][3], 4)
+    },
+    "best_model": best_model_name
+}
+
+os.makedirs("models", exist_ok=True)
+
+with open("models/model_metrics.json", "w") as f:
+    json.dump(metrics, f, indent=4)
+
+print("Model metrics saved successfully!")
+
+
 
 # =========================
 # SAVE MODEL LOCALLY
