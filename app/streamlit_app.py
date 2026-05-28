@@ -279,6 +279,40 @@ def get_aqi_category(aqi):
 
 status, color, icon = get_aqi_category(predicted_aqi)
 
+# =========================
+# AQI ALERT SYSTEM
+# =========================
+
+if predicted_aqi > 300:
+
+    st.error(
+        "☠️ HAZARDOUS AQI ALERT — Avoid all outdoor activity. Health emergency conditions detected."
+    )
+
+elif predicted_aqi > 200:
+
+    st.error(
+        "🚨 VERY UNHEALTHY AIR — Serious health effects possible. Stay indoors if possible."
+    )
+
+elif predicted_aqi > 150:
+
+    st.warning(
+        "⚠️ UNHEALTHY AQI — Sensitive groups should avoid prolonged outdoor exposure."
+    )
+
+elif predicted_aqi > 100:
+
+    st.warning(
+        "🟠 Moderate pollution detected — Consider wearing a mask outdoors."
+    )
+
+else:
+
+    st.success(
+        "✅ Air quality is currently acceptable."
+    )
+
 # Store in session for pages to use
 st.session_state["model"]         = model
 st.session_state["raw_data"]      = raw_data
