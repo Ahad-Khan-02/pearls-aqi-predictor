@@ -12,8 +12,8 @@ import joblib
 import pandas as pd
 import hopsworks
 from dotenv import load_dotenv
-from sklearn.model_selection import TimeSeriesSplit
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -79,14 +79,25 @@ y_test = test_df[target]
 # =========================
 
 models = {
-    "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42),
-    "Ridge": Ridge()
+    "RandomForest": RandomForestRegressor(
+        n_estimators=100,
+        random_state=42
+    ),
+
+    "Ridge": Ridge(),
+
+    "GradientBoosting": GradientBoostingRegressor(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=3,
+        random_state=42
+    )
 }
 
 best_model      = None
 best_r2         = float("-inf")
 best_model_name = None
-met=[]
+metrics = {}
 
 for name, model in models.items():
     print(f"\nTraining {name}...")
@@ -96,7 +107,11 @@ for name, model in models.items():
     mae  = mean_absolute_error(y_test, predictions)
     rmse = mean_squared_error(y_test, predictions) ** 0.5
     r2   = r2_score(y_test, predictions)
-    met.append(([name, mae, rmse, r2]))
+    metrics[name] = {
+    "MAE": round(mae, 4),
+    "RMSE": round(rmse, 4),
+    "R2": round(r2, 4)
+    }
 
     print(f"  MAE:  {mae:.4f}")
     print(f"  RMSE: {rmse:.4f}")
@@ -116,19 +131,7 @@ print(f"\nBest model: {best_model_name} (R2={best_r2:.4f})")
 
 import json
 
-metrics = {
-    "RandomForest": {
-        "MAE": round(met[0][1], 4),
-        "RMSE": round(met[0][2], 4),
-        "R2": round(met[0][3], 4)
-    },
-    "Ridge": {
-        "MAE": round(met[1][1], 4),
-        "RMSE": round(met[1][2], 4),
-        "R2": round(met[1][3], 4)
-    },
-    "best_model": best_model_name
-}
+metrics["best_model"] = best_model_name
 
 os.makedirs("models", exist_ok=True)
 
@@ -136,7 +139,6 @@ with open("models/model_metrics.json", "w") as f:
     json.dump(metrics, f, indent=4)
 
 print("Model metrics saved successfully!")
-
 
 
 # =========================

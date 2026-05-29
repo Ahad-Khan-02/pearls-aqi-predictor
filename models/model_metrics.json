@@ -9,5 +9,10 @@
         "RMSE": 5.0609,
         "R2": 0.9179
     },
-    "best_model": "RandomForest"
+    "GradientBoosting": {
+        "MAE": 1.8153,
+        "RMSE": 4.366,
+        "R2": 0.9389
+    },
+    "best_model": "GradientBoosting"
 }
