@@ -53,24 +53,10 @@ def load_feature_data():
 df = load_feature_data()
 
 if df is None:
-    st.warning("Feature data not found. Showing synthetic insights based on live data.")
-    # Generate synthetic data for demonstration
-    np.random.seed(42)
-    n = 500
-    df = pd.DataFrame({
-        "aqi":        np.random.normal(65, 20, n).clip(10, 200),
-        "pm25":       np.random.normal(35, 15, n).clip(5, 120),
-        "pm10":       np.random.normal(60, 25, n).clip(10, 200),
-        "no2":        np.random.normal(30, 12, n).clip(5, 80),
-        "o3":         np.random.normal(50, 18, n).clip(10, 120),
-        "co":         np.random.normal(180, 60, n).clip(20, 500),
-        "temperature":np.random.normal(30, 5, n).clip(18, 45),
-        "humidity":   np.random.normal(65, 15, n).clip(20, 95),
-        "wind_speed": np.random.normal(12, 5, n).clip(0, 40),
-        "hour":       np.random.randint(0, 24, n),
-        "day_of_week":np.random.randint(0, 7, n),
-        "month":      np.random.randint(1, 13, n),
-    })
+    st.error(
+        "Historical feature dataset not found."
+    )
+    st.stop()
 
 # =========================
 # KPI ROW

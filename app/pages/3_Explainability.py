@@ -120,7 +120,8 @@ top_vals        = [feature_vals[f] for f in top_features]
 # SUMMARY STATS
 # =========================
 
-predicted_aqi = st.session_state.get("predicted_aqi", base_val)
+input_df = pd.DataFrame([payload])
+predicted_aqi = float(model.predict(input_df)[0])
 top_contributor = top_features[0]
 top_impact      = top_shap[0]
 

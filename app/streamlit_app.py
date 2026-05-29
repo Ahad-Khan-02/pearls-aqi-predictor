@@ -85,25 +85,25 @@ status, color, icon = get_aqi_category(predicted_aqi)
 if predicted_aqi > 300:
 
     st.error(
-        "☠️ HAZARDOUS AQI ALERT — Avoid all outdoor activity. Health emergency conditions detected."
+        "HAZARDOUS AQI ALERT — Avoid all outdoor activity. Health emergency conditions detected."
     )
 
 elif predicted_aqi > 200:
 
     st.error(
-        "🚨 VERY UNHEALTHY AIR — Serious health effects possible. Stay indoors if possible."
+        "VERY UNHEALTHY AIR — Serious health effects possible. Stay indoors if possible."
     )
 
 elif predicted_aqi > 150:
 
     st.warning(
-        "⚠️ UNHEALTHY AQI — Sensitive groups should avoid prolonged outdoor exposure."
+        "UNHEALTHY AQI — Sensitive groups should avoid prolonged outdoor exposure."
     )
 
 elif predicted_aqi > 100:
 
     st.warning(
-        "🟠 Moderate pollution detected — Consider wearing a mask outdoors."
+        "Moderate pollution detected — Consider wearing a mask outdoors."
     )
 
 else:
@@ -166,8 +166,3 @@ for col, (label, value) in zip([col1, col2, col3, col4, col5], metrics):
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="nav-hint">
-    ← Use the sidebar to navigate between pages
-</div>
-""", unsafe_allow_html=True)
