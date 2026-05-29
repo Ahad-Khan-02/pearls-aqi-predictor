@@ -277,25 +277,3 @@ fig_heat.update_layout(
     font=dict(color="#e8f0fe")
 )
 st.plotly_chart(fig_heat, width="stretch")
-
-# =========================
-# KEY INSIGHTS
-# =========================
-
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-st.markdown("""
-<div class="info-card-title" style="font-size:0.7rem; letter-spacing:2px; color:#8899aa;
-     text-transform:uppercase; margin-bottom:1rem;">Key Insights</div>
-""", unsafe_allow_html=True)
-
-insights = [
-    "PM2.5 shows the strongest correlation with overall AQI",
-    "AQI peaks during morning rush hours (7-9am) and evening (6-9pm)",
-    "Weekend AQI is typically lower due to reduced vehicle emissions",
-    "Wind speed inversely correlates with pollutant concentration",
-    "Summer months show elevated O₃ due to photochemical reactions",
-    "PM10 spikes are linked to construction activity and dust storms",
-]
-
-for insight in insights:
-    st.markdown(f'<span class="insight-pill">💡 {insight}</span>', unsafe_allow_html=True)
