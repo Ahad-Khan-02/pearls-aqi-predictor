@@ -188,22 +188,15 @@ with col_radar:
 
     categories = ["R² Score", "Low MAE", "Low RMSE", "Stability", "Generalization"]
 
-    radar_data = {
-        "Random Forest": [
-            normalize(0.970, 0.85, 1.0),
-            normalize(4.31, 4.0, 12.0, invert=True),
-            normalize(6.29, 5.0, 15.0, invert=True),
-            0.92,
-            0.88,
-        ],
-        "Ridge": [
-            normalize(0.890, 0.85, 1.0),
-            normalize(8.72, 4.0, 12.0, invert=True),
-            normalize(11.85, 5.0, 15.0, invert=True),
-            0.78,
-            0.80,
-        ],
-    }
+    radar_data = {}
+
+    for model_name, vals in models_data.items():
+
+        radar_data[model_name] = [
+            vals["R2"],
+            1 / (1 + vals["MAE"]),
+            1 / (1 + vals["RMSE"])
+        ]
 
     # Define primary colors and matching translucent RGBA fills for the radar plots
     model_colors = {
