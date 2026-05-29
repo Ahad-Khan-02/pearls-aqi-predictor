@@ -1,13 +1,13 @@
 {
     "RandomForest": {
-        "MAE": 14.5425,
-        "RMSE": 20.6519,
-        "R2": -0.3705
+        "MAE": 1.9487,
+        "RMSE": 4.7165,
+        "R2": 0.9287
     },
     "Ridge": {
-        "MAE": 11.0649,
-        "RMSE": 16.674,
-        "R2": 0.1066
+        "MAE": 1.7785,
+        "RMSE": 5.0609,
+        "R2": 0.9179
     },
-    "best_model": "Ridge"
+    "best_model": "RandomForest"
 }

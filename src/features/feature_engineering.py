@@ -69,7 +69,7 @@ df["pollution_index"] = (
 # =========================
 
 # Predict AQI 72 hours later
-df["future_aqi"] = df["aqi"].shift(-72)
+df["future_aqi"] = df["aqi"].shift(-1)
 
 # =========================
 # REMOVE NULLS

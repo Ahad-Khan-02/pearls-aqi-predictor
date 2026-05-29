@@ -77,23 +77,170 @@ st.markdown("""
 
 @st.cache_data(ttl=3600)
 def generate_forecast(_model, _payload):
+
     forecast_values = []
+    np.random.seed(42)
+
     current = dict(_payload)
+
     for i in range(72):
+
+        # =========================
+        # TIME EVOLUTION
+        # =========================
+
+        current["hour"] = (current["hour"] + 1) % 24
+
+        if current["hour"] == 0:
+            current["day"] += 1
+            current["day_of_week"] = (current["day_of_week"] + 1) % 7
+
+            # Simple month rollover
+            if current["day"] > 30:
+                current["day"] = 1
+                current["month"] += 1
+
+            if current["month"] > 12:
+                current["month"] = 1
+
+        # Weekend indicator
+        current["is_weekend"] = 1 if current["day_of_week"] >= 5 else 0
+
+        # Rush hour simulation
+        current["is_rush_hour"] = 1 if (
+            7 <= current["hour"] <= 9 or
+            17 <= current["hour"] <= 20
+        ) else 0
+
+        # =========================
+        # WEATHER DRIFT SIMULATION
+        # =========================
+
+        current["temperature"] += np.random.normal(0, 0.3)
+
+        current["humidity"] += np.random.normal(0, 1.0)
+
+        current["wind_speed"] += np.random.normal(0, 0.2)
+
+        current["pressure"] += np.random.normal(0, 0.15)
+
+        # Clamp realistic ranges
+        current["humidity"] = np.clip(current["humidity"], 20, 95)
+
+        current["wind_speed"] = np.clip(current["wind_speed"], 0.5, 20)
+
+        # =========================
+        # POLLUTANT EVOLUTION
+        # =========================
+
+        rush_multiplier = 1.08 if current["is_rush_hour"] else 0.98
+
+        current["pm25"] *= rush_multiplier
+        current["pm10"] *= rush_multiplier
+
+        current["co"] *= rush_multiplier
+
+        current["no2"] *= rush_multiplier
+
+        current["pm25"] = np.clip(current["pm25"], 10, 400)
+        current["pm10"] = np.clip(current["pm10"], 10, 500)
+
+        current["co"] = np.clip(current["co"], 0.1, 50)
+
+        current["no2"] = np.clip(current["no2"], 1, 300)
+
+        current["o3"] = np.clip(current["o3"], 1, 250)
+
+        # Ozone daytime behavior
+        if 10 <= current["hour"] <= 16:
+            current["o3"] *= 1.02
+        else:
+            current["o3"] *= 0.99
+
+        # =========================
+        # POLLUTION INDEX UPDATE
+        # =========================
+
+        current["pollution_index"] = (
+            current["pm25"] * 0.4 +
+            current["pm10"] * 0.3 +
+            current["co"] * 0.1 +
+            current["no2"] * 0.1 +
+            current["o3"] * 0.1
+        )
+
+        # =========================
+        # MODEL PREDICTION
+        # =========================
+
         current.pop("timestamp", None)
+
         df = pd.DataFrame([current])
-        next_aqi = round(float(_model.predict(df)[0]), 2)
+
+        next_aqi = float(_model.predict(df)[0])
+
+        next_aqi = np.clip(next_aqi,0,300)
+
+        next_aqi = round(next_aqi, 2)
+
         forecast_values.append(next_aqi)
+
+        # =========================
+        # AUTOREGRESSIVE UPDATES
+        # =========================
+
         prev = current["previous_aqi"]
-        current["aqi_change"]    = next_aqi - prev
-        current["previous_aqi"]  = next_aqi
-        current["aqi_lag_3"]     = next_aqi
-        current["aqi_lag_6"]     = next_aqi
-        current["aqi_lag_12"]    = next_aqi
-        current["rolling_avg_3"] = (current["rolling_avg_3"] + next_aqi) / 2
-        current["rolling_avg_6"] = (current["rolling_avg_6"] + next_aqi) / 2
-        current["hour"]          = (current["hour"] + 1) % 24
+
+        current["aqi_change"] = next_aqi - prev
+        current["aqi_change"] = np.clip(current["aqi_change"],-20,20)
+
+        current["aqi_trend"] = (
+            current["aqi_trend"] * 0.7 +
+            current["aqi_change"] * 0.3
+        )
+
+        current["previous_aqi"] = max(next_aqi,5)
+
+        current["aqi_lag_3"] = (
+            current["aqi_lag_3"] * 0.7 +
+            next_aqi * 0.3
+        )
+
+        current["aqi_lag_6"] = (
+            current["aqi_lag_6"] * 0.8 +
+            next_aqi * 0.2
+        )
+
+        current["aqi_lag_12"] = (
+            current["aqi_lag_12"] * 0.9 +
+            next_aqi * 0.1
+        )
+
+        current["rolling_avg_3"] = (
+            current["rolling_avg_3"] * 0.6 +
+            next_aqi * 0.4
+        )
+
+        current["rolling_avg_6"] = (
+            current["rolling_avg_6"] * 0.7 +
+            next_aqi * 0.3
+        )
+
+        current["rolling_avg_24"] = (
+            current["rolling_avg_24"] * 0.9 +
+            next_aqi * 0.1
+        )
+
+        current["aqi_lag_3"] = max(current["aqi_lag_3"], 5)
+        current["aqi_lag_6"] = max(current["aqi_lag_6"], 5)
+        current["aqi_lag_12"] = max(current["aqi_lag_12"], 5)
+
+        current["rolling_avg_3"] = max(current["rolling_avg_3"], 5)
+        current["rolling_avg_6"] = max(current["rolling_avg_6"], 5)
+        current["rolling_avg_24"] = max(current["rolling_avg_24"], 5)
+
     return forecast_values
+
 
 with st.spinner("Generating 72-hour forecast..."):
     forecast_values = generate_forecast(model, payload)
@@ -105,6 +252,9 @@ best    = min(forecast_values)
 avg_72  = round(np.mean(forecast_values), 1)
 peak_h  = forecast_values.index(peak)
 best_h  = forecast_values.index(best)
+
+upper_bound = [x + 8 for x in forecast_values]
+lower_bound = [x - 8 for x in forecast_values]
 
 # =========================
 # SUMMARY STATS

@@ -46,54 +46,45 @@ fs = project.get_feature_store()
 # =========================
 
 feature_group = fs.get_feature_group(
-    name="aqi_features",
+    name="aqi_training_features",
     version=1
 )
 
 df = feature_group.read()
+df = df.sort_values("timestamp").reset_index(drop=True)
 
-print(f"Dataset Shape: {df.shape}")
+print(f"Loaded dataset shape: {df.shape}")
+
+
 
 # =========================
 # FEATURES & TARGET
 # =========================
 
 features = [
-    "temperature",
-    "humidity",
-    "wind_speed",
-    "pressure",
-    "pm25",
-    "pm10",
-    "co",
-    "no2",
-    "o3",
-    "hour",
-    "day",
-    "month",
-    "day_of_week",
-    "previous_aqi",
-    "aqi_lag_3",
-    "aqi_lag_6",
-    "aqi_lag_12",
-    "rolling_avg_3",
-    "rolling_avg_6",
-    "aqi_change"
+    "temperature", "humidity", "wind_speed", "pressure",
+    "pm25", "pm10", "co", "no2", "o3",
+    "hour", "day", "month", "day_of_week","is_weekend", "is_rush_hour",
+    "previous_aqi", "aqi_lag_3", "aqi_lag_6", "aqi_lag_12",
+    "rolling_avg_3", "rolling_avg_6","rolling_avg_24", "aqi_change","aqi_trend", "pollution_index"
 ]
 
-X = df[features]
-y = df["future_aqi"]
+target = "future_aqi"
 
 # =========================
-# TRAIN TEST SPLIT
+# TRAIN / TEST SPLIT
 # =========================
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
+split_index = int(len(df) * 0.8)
+
+train_df = df.iloc[:split_index]
+test_df  = df.iloc[split_index:]
+
+X_train = train_df[features]
+y_train = train_df[target]
+
+X_test = test_df[features]
+y_test = test_df[target]
 
 # =========================
 # FEATURE SCALING
@@ -181,36 +172,36 @@ print(f"R2 Score: {r2:.4f}")
 # SAVE MODEL
 # =========================
 
-os.makedirs("models", exist_ok=True)
+# os.makedirs("models", exist_ok=True)
 
-local_model_path = "models/tensorflow_aqi_model.keras"
+# local_model_path = "models/tensorflow_aqi_model.keras"
 
-model.save(local_model_path)
+# model.save(local_model_path)
 
-print(f"\nModel saved locally at: {local_model_path}")
+# print(f"\nModel saved locally at: {local_model_path}")
 
 # =========================
 # UPLOAD TO MODEL REGISTRY
 # =========================
 
-mr = project.get_model_registry()
+# mr = project.get_model_registry()
 
-tf_model = mr.tensorflow.create_model(
-    name="aqi_tensorflow_model",
-    metrics={
-        "mae": mae,
-        "rmse": rmse,
-        "r2_score": r2
-    },
-    description="TensorFlow AQI forecasting model"
-)
+# tf_model = mr.tensorflow.create_model(
+#     name="aqi_tensorflow_model",
+#     metrics={
+#         "mae": mae,
+#         "rmse": rmse,
+#         "r2_score": r2
+#     },
+#     description="TensorFlow AQI forecasting model"
+# )
 
-tf_model.save(local_model_path)
+# tf_model.save(local_model_path)
 
-print("\nTensorFlow model uploaded to Hopsworks!")
+# print("\nTensorFlow model uploaded to Hopsworks!")
 
 # =========================
 # CLOSE CONNECTION
 # =========================
 
-project.disconnect()
+# project.disconnect()
