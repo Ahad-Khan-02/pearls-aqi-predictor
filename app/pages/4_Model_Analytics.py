@@ -201,11 +201,13 @@ with col_radar:
     # Define primary colors and matching translucent RGBA fills for the radar plots
     model_colors = {
         "Random Forest": "#fbbf24", 
-        "Ridge": "#3b82f6"
+        "Ridge": "#3b82f6",
+        "Gradient Boosting": "#ef4444"
     }
     model_fills = {
         "Random Forest": "rgba(251, 191, 36, 0.13)",  # Matches #fbbf24 with low opacity
-        "Ridge": "rgba(59, 130, 246, 0.13)"          # Matches #3b82f6 with low opacity
+        "Ridge": "rgba(59, 130, 246, 0.13)",          # Matches #3b82f6 with low opacity
+        "Gradient Boosting": "rgba(239, 68, 68, 0.13)"  # Matches #ef4444 with low opacity  
     }
 
     fig_radar = go.Figure()
