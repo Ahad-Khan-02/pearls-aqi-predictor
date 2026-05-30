@@ -31,10 +31,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
-# MODEL METRICS DATA
-# =========================
 
+# MODEL METRICS DATA
 
 metrics_path = os.path.join(
     os.path.dirname(__file__),
@@ -74,9 +72,7 @@ for model_name, vals in metrics_json.items():
 
 
 
-# =========================
 # LEADERBOARD
-# =========================
 
 st.markdown("""
 <div class="info-card-title" style="font-size:0.7rem; letter-spacing:2px; color:#8899aa;
@@ -122,9 +118,8 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# =========================
+
 # METRIC COMPARISON CHARTS
-# =========================
 
 col_bar, col_radar = st.columns([1, 1])
 
@@ -246,9 +241,8 @@ with col_radar:
     )
     st.plotly_chart(fig_radar, width="stretch")
 
-# =========================
+
 # R² SCORE CHART
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""

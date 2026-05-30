@@ -4,37 +4,28 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 
-# =========================
-# SETUP API CLIENT
-# =========================
 
+# setup api clients with caching and retries
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 
 openmeteo = openmeteo_requests.Client(session=retry_session)
 
-# =========================
-# LOCATION
-# =========================
 
+# location coordinates for Karachi
 LATITUDE = 24.8607
 LONGITUDE = 67.0011
 
-# Karachi coordinates
 
-# =========================
-# DATE RANGE
-# =========================
 
+# date range for historical data (last 90 days)
 END_DATE = datetime.today().date()
 START_DATE = END_DATE - timedelta(days=90)
 
 print(f"Fetching data from {START_DATE} to {END_DATE}")
 
-# =========================
-# WEATHER API
-# =========================
 
+# weather api
 weather_url = "https://archive-api.open-meteo.com/v1/archive"
 
 weather_params = {
@@ -53,10 +44,8 @@ weather_params = {
 
 weather_response = openmeteo.weather_api(weather_url, params=weather_params)[0]
 
-# =========================
-# AIR QUALITY API
-# =========================
 
+# air quality api
 air_url = "https://air-quality-api.open-meteo.com/v1/air-quality"
 
 air_params = {
@@ -76,10 +65,8 @@ air_params = {
 
 air_response = openmeteo.weather_api(air_url, params=air_params)[0]
 
-# =========================
-# EXTRACT WEATHER DATA
-# =========================
 
+# extract weather data
 weather_hourly = weather_response.Hourly()
 
 time_index = pd.date_range(
@@ -89,10 +76,8 @@ time_index = pd.date_range(
     inclusive="left"
 )
 
-# =========================
-# CREATE DATAFRAME
-# =========================
 
+# create dataframe
 df = pd.DataFrame({
     "timestamp": time_index,
 
@@ -110,10 +95,7 @@ df = pd.DataFrame({
     "o3": air_response.Hourly().Variables(4).ValuesAsNumpy()
 })
 
-# =========================
-# CREATE SIMPLE AQI
-# =========================
-
+# create AQI target variable using a simple weighted formula
 df["aqi"] = (
     df["pm25"] * 0.5 +
     df["pm10"] * 0.2 +
@@ -121,13 +103,11 @@ df["aqi"] = (
     df["o3"] * 0.15
 )
 
-# Round AQI
+# round AQI to 2 decimal places
 df["aqi"] = df["aqi"].round(2)
 
-# =========================
-# SAVE DATASET
-# =========================
 
+# save to csv
 output_path = "data/raw/openmeteo_raw_data.csv"
 
 df.to_csv(output_path, index=False)

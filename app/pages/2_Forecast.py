@@ -71,9 +71,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
+
 # GENERATE FORECAST
-# =========================
 
 @st.cache_data(ttl=3600)
 def generate_forecast(_model, _payload):
@@ -85,9 +84,7 @@ def generate_forecast(_model, _payload):
 
     for i in range(72):
 
-        # =========================
         # TIME EVOLUTION
-        # =========================
 
         current["hour"] = (current["hour"] + 1) % 24
 
@@ -112,16 +109,12 @@ def generate_forecast(_model, _payload):
             17 <= current["hour"] <= 20
         ) else 0
 
-        # =========================
+
         # WEATHER DRIFT SIMULATION
-        # =========================
 
         current["temperature"] += np.random.normal(0, 0.3)
-
         current["humidity"] += np.random.normal(0, 1.0)
-
         current["wind_speed"] += np.random.normal(0, 0.2)
-
         current["pressure"] += np.random.normal(0, 0.15)
 
         # Clamp realistic ranges
@@ -129,26 +122,21 @@ def generate_forecast(_model, _payload):
 
         current["wind_speed"] = np.clip(current["wind_speed"], 0.5, 20)
 
-        # =========================
+         
         # POLLUTANT EVOLUTION
-        # =========================
+         
 
         rush_multiplier = 1.08 if current["is_rush_hour"] else 0.98
 
         current["pm25"] *= rush_multiplier
         current["pm10"] *= rush_multiplier
-
         current["co"] *= rush_multiplier
-
         current["no2"] *= rush_multiplier
 
         current["pm25"] = np.clip(current["pm25"], 10, 400)
         current["pm10"] = np.clip(current["pm10"], 10, 500)
-
         current["co"] = np.clip(current["co"], 0.1, 50)
-
         current["no2"] = np.clip(current["no2"], 1, 300)
-
         current["o3"] = np.clip(current["o3"], 1, 250)
 
         # Ozone daytime behavior
@@ -157,9 +145,8 @@ def generate_forecast(_model, _payload):
         else:
             current["o3"] *= 0.99
 
-        # =========================
+
         # POLLUTION INDEX UPDATE
-        # =========================
 
         current["pollution_index"] = (
             current["pm25"] * 0.4 +
@@ -169,25 +156,18 @@ def generate_forecast(_model, _payload):
             current["o3"] * 0.1
         )
 
-        # =========================
+
         # MODEL PREDICTION
-        # =========================
 
         current.pop("timestamp", None)
-
         df = pd.DataFrame([current])
-
         next_aqi = float(_model.predict(df)[0])
-
         next_aqi = np.clip(next_aqi,0,300)
-
         next_aqi = round(next_aqi, 2)
-
         forecast_values.append(next_aqi)
 
-        # =========================
+
         # AUTOREGRESSIVE UPDATES
-        # =========================
 
         prev = current["previous_aqi"]
 
@@ -256,9 +236,8 @@ best_h  = forecast_values.index(best)
 upper_bound = [x + 8 for x in forecast_values]
 lower_bound = [x - 8 for x in forecast_values]
 
-# =========================
+
 # SUMMARY STATS
-# =========================
 
 c1, c2, c3, c4 = st.columns(4)
 stats = [
@@ -279,9 +258,8 @@ for col, label, val, clr in stats:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# =========================
+
 # MAIN FORECAST CHART
-# =========================
 
 def aqi_color_for(v):
     if v <= 50:  return "#00e676"
@@ -381,9 +359,8 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-# =========================
+
 # HOURLY BREAKDOWN TABLE
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""

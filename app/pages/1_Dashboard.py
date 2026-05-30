@@ -11,14 +11,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 import streamlit as st
 import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
 
 st.set_page_config(
     page_title="...",
     page_icon="...",
     layout="wide",
-    initial_sidebar_state="expanded"   # ← this is critical
+    initial_sidebar_state="expanded"   
 )
 
 # Load CSS
@@ -34,9 +32,9 @@ status        = st.session_state.get("status", "Unknown")
 color         = st.session_state.get("color", "#ffffff")
 icon          = st.session_state.get("icon", "")
 
-# =========================
+
+
 # PAGE HEADER
-# =========================
 
 st.markdown("""
 <div class="page-header">
@@ -45,9 +43,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
+
 # AQI GAUGE + STATUS
-# =========================
 
 col_gauge, col_info = st.columns([1, 1])
 
@@ -92,7 +89,6 @@ with col_gauge:
     st.plotly_chart(fig, width="stretch")
 
 with col_info:
-    # AQI scale breakdown
     aqi_levels = [
         ("Good",                     "0–50",   "#00e676"),
         ("Moderate",                 "51–100",  "#ffeb3b"),
@@ -136,9 +132,9 @@ with col_info:
     </div>
     """, unsafe_allow_html=True)
 
-# =========================
+
+
 # POLLUTANT CARDS
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""
@@ -176,9 +172,8 @@ for col, (name, val, limit, clr, unit) in zip(cols, pollutants):
         </div>
         """, unsafe_allow_html=True)
 
-# =========================
+
 # WEATHER SNAPSHOT
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""

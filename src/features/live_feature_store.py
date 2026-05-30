@@ -8,39 +8,27 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
 apply_hopsworks_patches()
 
-
 from dotenv import load_dotenv
 import hopsworks
 import pandas as pd
 
-
-
-# =========================
-# LOAD ENV VARIABLES
-# =========================
-
+# load env variables
 load_dotenv()
 
 HOPSWORKS_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 if not HOPSWORKS_API_KEY:
     raise ValueError("HOPSWORKS_API_KEY not found in .env file.")
 
-# =========================
-# LOGIN
-# =========================
-
+ 
+# login to hopsworks and get feature store
 project = hopsworks.login(api_key_value=HOPSWORKS_API_KEY)
 
-# =========================
-# GET FEATURE STORE
-# =========================
-
+ 
+# get feature store
 fs = project.get_feature_store()
 
-# =========================
-# LOAD FEATURE DATA
-# =========================
-
+ 
+# load live featured dataset from csv
 data_path = "data/processed/live_featured_aqi_data.csv"
 if not os.path.exists(data_path):
     raise FileNotFoundError(f"Data file not found: {data_path}")
@@ -50,10 +38,8 @@ df["timestamp"] = pd.to_datetime(df["timestamp"])
 
 print(f"Loaded {len(df)} rows | Columns: {list(df.columns)}")
 
-# =========================
-# CREATE FEATURE GROUP
-# =========================
-
+ 
+# create feature group in feature store
 feature_group = fs.get_or_create_feature_group(
     name="aqi_live_features",
     version=1,
@@ -62,10 +48,8 @@ feature_group = fs.get_or_create_feature_group(
     event_time="timestamp"
 )
 
-# =========================
-# INSERT DATA
-# =========================
-
+ 
+# insert data into feature group
 df = df.drop_duplicates(subset=["timestamp"])
 df = df.sort_values("timestamp")
 df = df.dropna()

@@ -22,9 +22,9 @@ from sklearn.metrics import (
     r2_score
 )
 
-# =========================
+ 
 # LOAD ENV VARIABLES
-# =========================
+ 
 
 load_dotenv()
 
@@ -33,17 +33,17 @@ HOPSWORKS_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 if not HOPSWORKS_API_KEY:
     raise ValueError("HOPSWORKS_API_KEY not found.")
 
-# =========================
+ 
 # LOGIN TO HOPSWORKS
-# =========================
+ 
 
 project = hopsworks.login(api_key_value=HOPSWORKS_API_KEY)
 
 fs = project.get_feature_store()
 
-# =========================
+ 
 # LOAD FEATURE GROUP
-# =========================
+ 
 
 feature_group = fs.get_feature_group(
     name="aqi_training_features",
@@ -57,9 +57,9 @@ print(f"Loaded dataset shape: {df.shape}")
 
 
 
-# =========================
+ 
 # FEATURES & TARGET
-# =========================
+ 
 
 features = [
     "temperature", "humidity", "wind_speed", "pressure",
@@ -71,9 +71,9 @@ features = [
 
 target = "future_aqi"
 
-# =========================
+ 
 # TRAIN / TEST SPLIT
-# =========================
+ 
 
 split_index = int(len(df) * 0.8)
 
@@ -86,18 +86,18 @@ y_train = train_df[target]
 X_test = test_df[features]
 y_test = test_df[target]
 
-# =========================
+ 
 # FEATURE SCALING
-# =========================
+ 
 
 scaler = StandardScaler()
 
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# =========================
+ 
 # BUILD TENSORFLOW MODEL
-# =========================
+ 
 
 model = tf.keras.Sequential([
 
@@ -123,9 +123,9 @@ model = tf.keras.Sequential([
 
 ])
 
-# =========================
+ 
 # COMPILE MODEL
-# =========================
+ 
 
 model.compile(
     optimizer="adam",
@@ -133,9 +133,9 @@ model.compile(
     metrics=["mae"]
 )
 
-# =========================
+ 
 # TRAIN MODEL
-# =========================
+ 
 
 history = model.fit(
     X_train,
@@ -146,15 +146,15 @@ history = model.fit(
     verbose=1
 )
 
-# =========================
+ 
 # PREDICTIONS
-# =========================
+ 
 
 predictions = model.predict(X_test).flatten()
 
-# =========================
+ 
 # EVALUATION
-# =========================
+ 
 
 mae = mean_absolute_error(y_test, predictions)
 
@@ -168,9 +168,9 @@ print(f"MAE: {mae:.4f}")
 print(f"RMSE: {rmse:.4f}")
 print(f"R2 Score: {r2:.4f}")
 
-# =========================
+ 
 # SAVE MODEL
-# =========================
+ 
 
 # os.makedirs("models", exist_ok=True)
 
@@ -180,9 +180,9 @@ print(f"R2 Score: {r2:.4f}")
 
 # print(f"\nModel saved locally at: {local_model_path}")
 
-# =========================
+ 
 # UPLOAD TO MODEL REGISTRY
-# =========================
+ 
 
 # mr = project.get_model_registry()
 
@@ -200,8 +200,8 @@ print(f"R2 Score: {r2:.4f}")
 
 # print("\nTensorFlow model uploaded to Hopsworks!")
 
-# =========================
+ 
 # CLOSE CONNECTION
-# =========================
+ 
 
 # project.disconnect()

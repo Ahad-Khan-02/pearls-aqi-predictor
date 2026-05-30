@@ -66,9 +66,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
+ 
 # COMPUTE SHAP
-# =========================
+ 
 
 @st.cache_data(ttl=3600)
 def compute_shap(_model, _payload):
@@ -116,9 +116,8 @@ top_shap        = [shap_arr[i] for i in top_idx]
 top_importance  = [importance[i] for i in top_idx]
 top_vals        = [feature_vals[f] for f in top_features]
 
-# =========================
+
 # SUMMARY STATS
-# =========================
 
 input_df = pd.DataFrame([payload])
 predicted_aqi = float(model.predict(input_df)[0])
@@ -149,9 +148,8 @@ with c3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# =========================
+
 # SHAP BAR CHART
-# =========================
 
 col_bar, col_waterfall = st.columns([1, 1])
 
@@ -249,9 +247,7 @@ with col_waterfall:
     )
     st.plotly_chart(fig_wf, width="stretch")
 
-# =========================
 # FEATURE CONTRIBUTOR TABLE
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""

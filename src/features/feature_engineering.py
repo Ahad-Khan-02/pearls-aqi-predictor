@@ -1,24 +1,15 @@
 import pandas as pd
 
-# =========================
-# LOAD RAW DATA
-# =========================
-
+# load raw data
 df = pd.read_csv("data/raw/openmeteo_raw_data.csv")
 
-# =========================
-# DATETIME PROCESSING
-# =========================
-
+# data preprocessing
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 
 # Sort by time
 df = df.sort_values("timestamp")
 
-# =========================
-# TIME FEATURES
-# =========================
-
+# time features
 df["hour"] = df["timestamp"].dt.hour
 df["day"] = df["timestamp"].dt.day
 df["month"] = df["timestamp"].dt.month
@@ -30,33 +21,25 @@ df["is_rush_hour"] = df["hour"].apply(
     lambda x: 1 if 7 <= x <= 10 or 17 <= x <= 20 else 0
 )
 
-# =========================
-# LAG FEATURES
-# =========================
-
+# lag features
 df["previous_aqi"] = df["aqi"].shift(1)
 df["aqi_lag_3"] = df["aqi"].shift(3)
 df["aqi_lag_6"] = df["aqi"].shift(6)
 df["aqi_lag_12"] = df["aqi"].shift(12)
 
-# =========================
-# ROLLING FEATURES
-# =========================
-
+ 
+# rolling averages
 df["rolling_avg_3"] = df["aqi"].rolling(window=3, min_periods=1).mean()
 df["rolling_avg_6"] = df["aqi"].rolling(window=6, min_periods=1).mean()
 df["rolling_avg_24"] = df["aqi"].rolling(window=24, min_periods=1).mean()
 
-# =========================
-# AQI CHANGE RATE
-# =========================
-
+ 
+# aqi change and trend
 df["aqi_change"] = df["aqi"].diff()
 df["aqi_trend"] = df["previous_aqi"] - df["aqi_lag_3"]
 
-# =========================
-# POLLUTION INTENSITY
-# =========================
+ 
+# pollution index (simple weighted sum of pollutants)
 df["pollution_index"] = (
     df["pm25"] * 0.5 +
     df["pm10"] * 0.3 +
@@ -64,23 +47,14 @@ df["pollution_index"] = (
 )
 
 
-# =========================
-# TARGET VARIABLE
-# =========================
-
-# Predict AQI 72 hours later
+# predicting future AQI (shifted target variable)
 df["future_aqi"] = df["aqi"].shift(-1)
 
-# =========================
-# REMOVE NULLS
-# =========================
-
+ 
+# remove rows with missing values (due to lag features and future target)
 df = df.dropna()
 
-# =========================
-# SAVE FEATURED DATASET
-# =========================
-
+# save featured dataset to csv
 output_path = "data/processed/featured_aqi_data.csv"
 
 df.to_csv(output_path, index=False)

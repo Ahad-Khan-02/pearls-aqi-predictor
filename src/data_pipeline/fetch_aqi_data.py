@@ -3,19 +3,14 @@ import pandas as pd
 from datetime import datetime
 import requests
 
-# =========================
-# CONFIG
-# =========================
 
+# config
 CITY = "karachi"
 API_URL = f"https://api.waqi.info/feed/{CITY}/?token=demo"
-
 OUTPUT_PATH = "data/raw/live_aqi_data.csv"
 
-# =========================
-# FETCH LIVE DATA
-# =========================
 
+# fetch data
 response = requests.get(API_URL)
 
 if response.status_code != 200:
@@ -32,10 +27,8 @@ if data["status"] != "ok":
 
 aqi_data = data["data"]
 
-# =========================
-# EXTRACT FEATURES
-# =========================
 
+# extract features
 record = {
     "timestamp": datetime.now(),
 
@@ -87,16 +80,12 @@ record = {
         .get("v"),
 }
 
-# =========================
-# CREATE DATAFRAME
-# =========================
 
+# create dataframe
 new_df = pd.DataFrame([record])
 
-# =========================
-# APPEND TO CSV
-# =========================
 
+# append to csv
 os.makedirs(
     os.path.dirname(OUTPUT_PATH),
     exist_ok=True
@@ -114,10 +103,8 @@ if os.path.exists(OUTPUT_PATH):
 else:
     updated_df = new_df
 
-# =========================
-# SAVE
-# =========================
 
+# save 
 updated_df.to_csv(
     OUTPUT_PATH,
     index=False

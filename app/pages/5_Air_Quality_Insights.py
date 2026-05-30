@@ -35,9 +35,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
+
 # LOAD FEATURE DATA
-# =========================
 
 @st.cache_data(ttl=3600)
 def load_feature_data():
@@ -58,9 +57,8 @@ if df is None:
     )
     st.stop()
 
-# =========================
+
 # KPI ROW
-# =========================
 
 c1, c2, c3, c4 = st.columns(4)
 kpis = [
@@ -79,9 +77,8 @@ for col, label, val, clr in kpis:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# =========================
+
 # ROW 1: AQI DISTRIBUTION + HOURLY PATTERN
-# =========================
 
 col1, col2 = st.columns([1, 1])
 
@@ -152,9 +149,8 @@ with col2:
     )
     st.plotly_chart(fig_hour, width="stretch")
 
-# =========================
+
 # ROW 2: WEEKDAY + MONTHLY
-# =========================
 
 col3, col4 = st.columns([1, 1])
 
@@ -224,9 +220,8 @@ with col4:
     )
     st.plotly_chart(fig_mon, width="stretch")
 
-# =========================
+
 # CORRELATION HEATMAP
-# =========================
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("""

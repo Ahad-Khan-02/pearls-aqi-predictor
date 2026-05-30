@@ -9,7 +9,6 @@ from src.utils.hopsworks_windows_patch import apply_hopsworks_patches
 apply_hopsworks_patches()
 
 import joblib
-import pandas as pd
 import hopsworks
 from dotenv import load_dotenv
 from sklearn.ensemble import RandomForestRegressor
@@ -17,39 +16,26 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-
-
-# =========================
-# LOAD ENV
-# =========================
-
+# load env
 load_dotenv()
 
 HOPSWORKS_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 if not HOPSWORKS_API_KEY:
     raise ValueError("HOPSWORKS_API_KEY not found in .env file.")
 
-# =========================
-# LOGIN
-# =========================
-
+ 
+# login to hopsworks and get feature store
 project = hopsworks.login(api_key_value=HOPSWORKS_API_KEY)
 fs = project.get_feature_store()
-
-# =========================
-# GET FEATURE GROUP
-# =========================
-
+ 
+# get featured dataset from feature store
 feature_group = fs.get_feature_group(name="aqi_training_features", version=1)
 df = feature_group.read()
 df = df.sort_values("timestamp").reset_index(drop=True)
 
 print(f"Loaded dataset shape: {df.shape}")
 
-# =========================
-# FEATURES & TARGET
-# =========================
-
+# feature columns and target variable
 features = [
     "temperature", "humidity", "wind_speed", "pressure",
     "pm25", "pm10", "co", "no2", "o3",
@@ -59,10 +45,9 @@ features = [
 ]
 target = "future_aqi"
 
-# =========================
-# TRAIN / TEST SPLIT
-# =========================
-
+ 
+# train-test split (80-20)
+ 
 split_index = int(len(df) * 0.8)
 
 train_df = df.iloc[:split_index]
@@ -74,10 +59,8 @@ y_train = train_df[target]
 X_test = test_df[features]
 y_test = test_df[target]
 
-# =========================
-# TRAIN MODELS
-# =========================
-
+ 
+# train and evaluate models
 models = {
     "RandomForest": RandomForestRegressor(
         n_estimators=100,
@@ -125,34 +108,25 @@ for name, model in models.items():
 print(f"\nBest model: {best_model_name} (R2={best_r2:.4f})")
 
 
-# =========================
-# SAVE MODEL METRICS
-# =========================
-
+ 
+# save model metrics to json file
 import json
 
 metrics["best_model"] = best_model_name
-
 os.makedirs("models", exist_ok=True)
-
 with open("models/model_metrics.json", "w") as f:
     json.dump(metrics, f, indent=4)
-
 print("Model metrics saved successfully!")
 
 
-# =========================
-# SAVE MODEL LOCALLY
-# =========================
 
+# save best model to disk
 os.makedirs("models", exist_ok=True)
 model_path = "models/best_aqi_model.pkl"
 joblib.dump(best_model, model_path)
 
-# =========================
-# UPLOAD TO MODEL REGISTRY
-# =========================
-
+ 
+# upload model to Hopsworks Model Registry with metrics
 mr = project.get_model_registry()
 
 aqi_model = mr.python.create_model(
@@ -160,7 +134,5 @@ aqi_model = mr.python.create_model(
     metrics={"r2_score": best_r2},
     description="AQI forecasting model trained from Hopsworks Feature Store"
 )
-
 aqi_model.save(model_path)
-
 print("Model uploaded to Hopsworks Model Registry!")

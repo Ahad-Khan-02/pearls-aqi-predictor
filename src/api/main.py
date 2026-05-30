@@ -1,4 +1,3 @@
-import os
 import joblib
 import pandas as pd
 import numpy as np
@@ -6,28 +5,20 @@ import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# =========================
 # LOAD MODEL
-# =========================
-
 MODEL_PATH = "models/best_aqi_model.pkl"
-
 model = joblib.load(MODEL_PATH)
 
-# =========================
-# CREATE APP
-# =========================
 
+# CREATE APP
 app = FastAPI(
     title="Pearls AQI Predictor API",
     description="AQI Forecasting API using ML models",
     version="1.0"
 )
 
-# =========================
-# INPUT SCHEMA
-# =========================
 
+# INPUT SCHEMA
 class AQIInput(BaseModel):
 
     temperature: float
@@ -56,25 +47,19 @@ class AQIInput(BaseModel):
 
     aqi_change: float
 
-# =========================
-# ROOT ENDPOINT
-# =========================
 
+# ROOT ENDPOINT
 @app.get("/")
 def home():
-
     return {
         "message": "Pearls AQI Predictor API is running"
     }
 
-# =========================
-# PREDICTION ENDPOINT
-# =========================
 
+# PREDICTION ENDPOINT
 @app.post("/predict")
 
 def predict(data: AQIInput):
-
     features = np.array([[
         data.temperature,
         data.humidity,
@@ -106,25 +91,18 @@ def predict(data: AQIInput):
     prediction = model.predict(features)[0]
 
     # AQI Category Logic
-
     if prediction <= 50:
         status = "Good"
-
     elif prediction <= 100:
         status = "Moderate"
-
     elif prediction <= 150:
         status = "Unhealthy for Sensitive Groups"
-
     elif prediction <= 200:
         status = "Unhealthy"
-
     elif prediction <= 300:
         status = "Very Unhealthy"
-
     else:
         status = "Hazardous"
-
     return {
         "predicted_aqi": round(float(prediction), 2),
         "status": status

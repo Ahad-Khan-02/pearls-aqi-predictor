@@ -19,9 +19,8 @@ import joblib
 import pandas as pd
 import numpy as np
 
-# =========================
+
 # PAGE CONFIG
-# =========================
 
 st.set_page_config(
     page_title="Karachi AQI Intelligence",
@@ -30,17 +29,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# =========================
+
 # LOAD SHARED CSS
-# =========================
 
 css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
 with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# =========================
+
 # LOAD MODEL + DATA (cached)
-# =========================
 
 @st.cache_resource
 def load_model():
@@ -78,9 +75,8 @@ def get_aqi_category(aqi):
 
 status, color, icon = get_aqi_category(predicted_aqi)
 
-# =========================
+
 # AQI ALERT SYSTEM
-# =========================
 
 if predicted_aqi > 300:
 
@@ -122,9 +118,9 @@ st.session_state["color"]         = color
 st.session_state["icon"]          = icon
 st.session_state["FEATURE_COLUMNS"] = FEATURE_COLUMNS
 
-# =========================
+ 
 # HERO SECTION
-# =========================
+ 
 
 st.markdown(f"""
 <div class="hero-section">
@@ -143,9 +139,8 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
+
 # TOP METRICS ROW
-# =========================
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
