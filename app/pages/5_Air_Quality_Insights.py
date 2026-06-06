@@ -30,7 +30,7 @@ raw_data = st.session_state.get("raw_data", {})
 
 st.markdown("""
 <div class="page-header">
-    <h2>🌐 Air Quality Insights</h2>
+    <h2> Air Quality Insights</h2>
     <p>Analytical deep-dive into Karachi's air quality patterns</p>
 </div>
 """, unsafe_allow_html=True)

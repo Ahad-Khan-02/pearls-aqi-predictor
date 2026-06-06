@@ -38,7 +38,7 @@ icon          = st.session_state.get("icon", "")
 
 st.markdown("""
 <div class="page-header">
-    <h2>📊 Dashboard</h2>
+    <h2> Dashboard</h2>
     <p>Real-time air quality overview for Karachi, Pakistan</p>
 </div>
 """, unsafe_allow_html=True)

@@ -61,7 +61,7 @@ payload = {
 
 st.markdown("""
 <div class="page-header">
-    <h2>🔬 Explainability</h2>
+    <h2> Explainability</h2>
     <p>SHAP-based feature importance — understand what drives the prediction</p>
 </div>
 """, unsafe_allow_html=True)

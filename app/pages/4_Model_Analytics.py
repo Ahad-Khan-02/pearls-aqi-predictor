@@ -26,7 +26,7 @@ with open(css_path) as f:
 
 st.markdown("""
 <div class="page-header">
-    <h2>🏆 Model Analytics</h2>
+    <h2> Model Analytics</h2>
     <p>Performance comparison across all trained models</p>
 </div>
 """, unsafe_allow_html=True)

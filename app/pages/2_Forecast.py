@@ -66,7 +66,7 @@ color         = st.session_state.get("color", "#3b82f6")
 
 st.markdown("""
 <div class="page-header">
-    <h2>📈 72-Hour Forecast</h2>
+    <h2> 72-Hour Forecast</h2>
     <p>Autoregressive AQI projection for the next 3 days</p>
 </div>
 """, unsafe_allow_html=True)
