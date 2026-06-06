@@ -66,12 +66,12 @@ missing = [c for c in required_cols if c not in df.columns]
 if missing:
     raise ValueError(f"Missing columns: {missing}")
 
+df = df.sort_values("timestamp")
+df = df.tail(1)
 
 feature_group.insert(
     df,
-    write_options={
-        "wait_for_job": True
-    }
+    wait=False
 )
 
 print("Feature Store upload completed successfully!")

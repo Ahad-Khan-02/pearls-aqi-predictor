@@ -53,9 +53,7 @@ feature_group = fs.get_or_create_feature_group(
 # insert data into feature group
 feature_group.insert(
     df,
-    write_options={
-        "wait_for_job": True
-    }
+    wait=False
 )
 
 print("Training Feature Store upload completed!")
