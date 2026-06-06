@@ -39,4 +39,4 @@ jobs:
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
         run: |
-          python src/features/feature_store.py
+          python src/features/live_feature_store.py
