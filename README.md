@@ -6,6 +6,11 @@ The system automatically collects environmental data, generates features, trains
 
 ---
 
+## Project Documentation
+
+📄 Full Project Report:
+- [Pearls AQI Predictor Report](report/Pearls_AQI_Predictor.pdf)
+
 ## Live Demo
 
 **Streamlit Application**
