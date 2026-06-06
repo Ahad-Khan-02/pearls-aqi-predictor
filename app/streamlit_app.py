@@ -131,7 +131,7 @@ st.markdown(f"""
     <p class="hero-subtitle">Real-time air quality monitoring & 72-hour forecasting</p>
     <div class="hero-aqi" style="color:{color};">
         {predicted_aqi}
-        <span class="hero-aqi-label">AQI</span>
+        <span class="hero-aqi-label">AQI (predicted)</span>
     </div>
     <div class="hero-status" style="background:{color}22; border:1px solid {color}44; color:{color};">
         {status}
