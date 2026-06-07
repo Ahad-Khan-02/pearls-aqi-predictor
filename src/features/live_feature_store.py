@@ -68,6 +68,7 @@ if missing:
 
 df = df.sort_values("timestamp")
 df = df.tail(1)
+df["temperature"] = df["temperature"].astype(int)
 
 feature_group.insert(
     df,
